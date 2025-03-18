@@ -5,23 +5,32 @@ import cors from "cors";
 
 const app = express()
 app.use(express.json())
-
 app.use(cors());
-
-app.post("/api/v1/website",authMiddleware, async (req, res) => {
-    const userId = req.userId!;
-    const { url } = req.body;
-
-    const data = await prismaClient.website.create({
-         data: {
-            userId,
-            url
-         }
-    })
-    res.json({
+// console.log("server is running");
+app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+    next();
+});
+app.post("/api/v1/website", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.userId!;
+      const { url } = req.body;
+  
+      const data = await prismaClient.website.create({
+        data: {
+          userId,
+          url
+        }
+      });
+  
+      res.json({
         id: data.id
-    })
-})
+      });
+    } catch (error) {
+      console.error('Error creating website:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 
 app.get("/api/v1/website/status",authMiddleware,async (req, res) =>{
@@ -43,23 +52,28 @@ app.get("/api/v1/website/status",authMiddleware,async (req, res) =>{
 })
 
 
-app.get("/api/v1/websites",authMiddleware, async (req, res) => {
-    const userId = req.userId!;
-
-    const websites = await prismaClient.website.findMany({
+app.get("/api/v1/websites", authMiddleware, async (req, res) => {
+    try {
+      const userId = req.userId!;
+  
+      const websites = await prismaClient.website.findMany({
         where: {
-            userId,
-            disabled: false
+          userId,
+          disabled: false
         },
         include: {
-            ticks: true
+          ticks: true
         }
-    })
-
-    res.json({
+      });
+  
+      res.json({
         websites
-    })
-})
+      });
+    } catch (error) {
+      console.error('Error fetching websites:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 app.delete("/api/v1/website/",authMiddleware, async (req, res) =>{
     const websiteId = req.body.websiteId;
@@ -82,4 +96,6 @@ app.delete("/api/v1/website/",authMiddleware, async (req, res) =>{
 
 })
 
-app.listen(8080);
+app.listen(8080, () => {
+    console.log('Server is running on http://localhost:8080');
+});
