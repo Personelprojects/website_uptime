@@ -9,7 +9,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   }
 
   // Simulate user authentication (Replace this with actual JWT decoding logic)
-  req.userId = "1"; // 👈 This might need a type fix (explained below)
+  req.userId = "6"; // 👈 This might need a type fix (explained below)
 
   next();
 }
